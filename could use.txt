@@ -1,0 +1,105 @@
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="Testing">
+      <Controls>
+        <Label name="$(parent)Label1" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" font="ZoFontGamepadCondensed42" wrapMode="TRUNCATE" verticalAlignment="TOP" horizontalAlignment="LEFT" text=" ">
+          <Anchor point="TOPLEFT" relativeTo="ZO_SharedGamepadNavQuadrant_4_Background" relativePoint="TOPLEFT" offsetX="40" offsetY="104"/>
+        </Label>
+      </Controls>
+    </TopLevelControl>
+  </Controls>
+</GuiXml>
+
+
+<GuiXml>
+  <Controls>
+    <TopLevelControl name="Lib_WorldMapFilters_Gamepad" hidden="true"> 
+      <AnchorFill/>    
+      <Controls>
+        <Control name="$(parent)SideContent" inherits="ZO_GamepadGrid_NavQuadrant_4_Anchors">
+          <Controls>
+            <Control name="$(parent)Tooltip" inherits="ZO_ScrollTooltip_Gamepad ZO_GamepadGrid_NavQuadrant_ContainerAnchors"/>
+          </Controls>
+        </Control>    
+      </Controls
+    </TopLevelControl>
+  </Controls>
+</GuiXml>
+
+local function GamePadScrollingToolTip()
+    self.control = control
+    self.scrollTooltip = control:GetNamedChild("SideContent"):GetNamedChild("Tooltip")
+    ZO_ScrollTooltip_Gamepad:Initialize(self.scrollTooltip, ZO_TOOLTIP_STYLES, "worldMapTooltip")
+    zo_mixin(self.scrollTooltip, ZO_MapInformationTooltip_Gamepad_Mixin)
+    ZO_Scroll_Gamepad_SetScrollIndicatorSide(self.scrollTooltip.scrollIndicator, ZO_SharedGamepadNavQuadrant_4_Background, LEFT)
+end
+
+
+    if self.control:IsHidden() then return end
+
+    self.scrollTooltip:ClearLines()
+
+    local targetData = self.questList:GetTargetData()
+
+    if not targetData then
+        self:RefreshKeybind()
+        return
+    end
+
+    local tooltipControl = self.scrollTooltip
+
+    local questName = "test title"
+
+    local questLevel = 50
+    local questColor = GetColorDefForCon(GetCon(questLevel))
+
+    local titleStyle = tooltipControl.tooltip:GetStyle("mapQuestTitle")
+    local groupSection = tooltipControl.tooltip:AcquireSection(titleStyle, tooltipControl.tooltip:GetStyle("mapKeepCategorySpacing"))
+    local icon, mapIconTitleStyle
+
+    tooltipControl:LayoutGroupHeader(groupSection, icon, questColor:Colorize(questName), mapIconTitleStyle, tooltipControl.tooltip:GetStyle("mapTitle"))
+    tooltipControl.tooltip:AddSection(groupSection)
+
+<Controls>
+                <Control name="$(parent)Main" inherits="ZO_WorldMapInfoContent_Gamepad">
+                    <Controls>
+                        <Control name="$(parent)List" inherits="ZO_VerticalParametricScrollListTemplate">
+                            <AnchorFill/>
+                        </Control>
+                    </Controls>
+                </Control>
+</Controls>
+
+
+
+
+function MapLocations_Gamepad:InitializeList(control)
+    self.list = ZO_GamepadVerticalParametricScrollList:New(control:GetNamedChild("Main"):GetNamedChild("List"))
+    self.list:AddDataTemplate("ZO_GamepadMenuEntryTemplateLowercase42", function(...) self:SetupLocation(...) end, ZO_GamepadMenuEntryTemplateParametricListFunction)
+    self.list:SetAlignToScreenCenter(true)
+    local narrationInfo = 
+    {
+        canNarrate = function()
+            return GAMEPAD_WORLD_MAP_LOCATIONS_FRAGMENT:IsShowing()
+        end,
+        headerNarrationFunction = function()
+            return GAMEPAD_WORLD_MAP_INFO:GetHeaderNarration()
+        end,
+    }
+    SCREEN_NARRATION_MANAGER:RegisterParametricList(self.list, narrationInfo)
+end
+
+function MapLocations_Gamepad:BuildLocationList()
+    self.list:Clear()
+
+    local mapData = self.data:GetLocationList()
+
+    for i, mapEntry in ipairs(mapData) do
+        local entryData = ZO_GamepadEntryData:New(mapEntry.locationName)
+        entryData:SetDataSource(mapEntry)
+        self.list:AddEntry("ZO_GamepadMenuEntryTemplateLowercase42", entryData)
+    end
+
+    self.list:Commit()
+end
+		
